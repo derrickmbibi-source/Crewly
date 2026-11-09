@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>Crewly — Manager Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" />
+  <link rel="stylesheet" href="manager-styles.css" />
+  <style>
+    .setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
+    .setting-row:last-child{border-bottom:none;}
+    .setting-label{font-size:13px;font-weight:600;color:var(--text-primary);}
+    .setting-sub{font-size:12px;color:var(--text-tertiary);margin-top:2px;}
+    .switch-wrap{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0;}
+    .switch-wrap input{opacity:0;width:0;height:0;}
+    .switch-slider{position:absolute;cursor:pointer;inset:0;background:#D1D5DB;border-radius:22px;transition:.2s;}
+    .switch-slider:before{content:"";position:absolute;height:16px;width:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.2);}
+    .switch-wrap input:checked + .switch-slider{background:#1D4ED8;}
+    .switch-wrap input:checked + .switch-slider:before{transform:translateX(18px);}
+
+    /* Manager-specific helpers */
+    .team-table{width:100%;border-collapse:collapse;font-size:13px;}
+    .team-table th{text-align:left;padding:10px;background:var(--bg-surface);color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);}
+    .team-table td{padding:12px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+    .team-table tr:last-child td{border-bottom:none;}
+    .row-avatar{display:flex;align-items:center;gap:10px;}
+    .approval-card{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:14px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;background:var(--bg-white);}
+    .approval-meta{font-size:12px;color:var(--text-tertiary);margin-top:4px;}
+    .approval-actions{display:flex;gap:8px;flex-shrink:0;}
+    .btn-success{background:var(--success);color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+    .btn-danger{background:var(--danger);color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+    .kpi-trend-up{color:var(--success-text);font-weight:600;}
+    .kpi-trend-down{color:var(--danger-text);font-weight:600;}
+    .mini-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:6px;}
+    .mini-bar > div{height:100%;background:var(--accent);}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;}
+    .pill-blue{background:var(--accent-bg);color:var(--accent-text);}
+    .pill-green{background:var(--success-bg);color:var(--success-text);}
+    .pill-amber{background:var(--warning-bg);color:var(--warning-text);}
+    .pill-red{background:var(--danger-bg);color:var(--danger-text);}
+    .pill-purple{background:var(--purple-bg);color:var(--purple-text);}
+    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+    .input,.select{padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+    @media(max-width:900px){.grid-3{grid-template-columns:1fr;}}
+  </style>
+  <script src="crewly-db.js"></script>
+  <script>CrewlyDB.guard('manager');</script>
+  <script src="crewly-ai.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg class="logo-image" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 100" role="img" aria-label="Crewly">
+        <rect class="logo-tile" x="0" y="10" width="80" height="80" rx="22"/>
+        <path d="M52.96 37.04 A18.33 18.33 0 1 0 52.96 62.96" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+        <circle class="logo-bright-fill" cx="52.5" cy="50" r="5"/>
+        <text x="96" y="72" font-family="'Space Grotesk', Inter, Arial, sans-serif" font-size="68" font-weight="700" letter-spacing="-1.5"><tspan class="logo-accent-fill">Crew</tspan><tspan class="logo-ly">ly</tspan></text>
+      </svg>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section">Overview</div>
+      <div class="nav-item active" data-page="home"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+      <div class="nav-item" data-page="team"><i class="ti ti-users"></i> My Team</div>
+
+      <div class="nav-section">Approvals</div>
+      <div class="nav-item" data-page="approvals"><i class="ti ti-checkbox"></i> Pending Approvals <span class="pill pill-red" id="nav-approval-count" style="margin-left:auto;">0</span></div>
+      <div class="nav-item" data-page="attendance"><i class="ti ti-clock"></i> Team Attendance</div>
+
+      <div class="nav-section">Growth</div>
+      <div class="nav-item" data-page="performance"><i class="ti ti-chart-line"></i> Performance</div>
+      <div class="nav-item" data-page="appraisal"><i class="ti ti-clipboard-check"></i> Appraisals</div>
+      <div class="nav-item" data-page="training"><i class="ti ti-school"></i> Training</div>
+
+      <div class="nav-section">Operations</div>
+      <div class="nav-item" data-page="payroll"><i class="ti ti-cash"></i> Payroll</div>
+      <div class="nav-item" data-page="reports"><i class="ti ti-chart-bar"></i> Reports</div>
+      <div class="nav-item" data-page="announcements"><i class="ti ti-speakerphone"></i> Announcements</div>
+
+      <div class="nav-section">Account</div>
+      <div class="nav-item" data-page="settings"><i class="ti ti-settings"></i> Settings</div>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar-wrap">
+        <div class="avatar-sm" style="background:#EFF6FF;color:#1D4ED8;">DM</div>
+        <div class="user-online"></div>
+      </div>
+      <div class="user-info">
+        <div class="user-name">Daniel Mensah</div>
+        <div class="user-role">Engineering Manager</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-title" id="page-title">Dashboard</div>
+          <div class="topbar-breadcrumb" id="page-breadcrumb">Good morning, Daniel</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" style="background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 50%; font-size: 20px; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin-right: 8px; transition: all 0.2s;">
+          <i class="ti ti-moon" id="theme-toggle-icon"></i>
+        </button>
+        <div class="notif-container">
+          <div class="notif-btn" id="notif-btn">
+            <i class="ti ti-bell"></i>
+            <div class="notif-dot" id="notif-dot"></div>
+          </div>
+          <div class="notif-dropdown" id="notif-dropdown">
+            <div class="notif-header">Notifications</div>
+            <div class="notif-list" id="notif-list"></div>
+            <div class="notif-footer"><a href="#" onclick="clearNotifications()">Clear All</a></div>
+          </div>
+        </div>
+        <div class="topbar-avatar" style="background:#EFF6FF;color:#1D4ED8;">DM</div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- ── DASHBOARD ── -->
+      <section id="page-home">
+        <div class="welcome-banner">
+          <div class="welcome-text">
+            <div class="welcome-greeting">Good morning, Daniel 👋</div>
+            <div class="welcome-sub">Here's what's happening with your team today.</div>
+          </div>
+          <div class="welcome-date">
+            <div class="date-day" id="today-day"></div>
+            <div class="date-label" id="today-date"></div>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#EFF6FF;"><i class="ti ti-users" style="color:#2563EB;"></i></div>
+            <div class="stat-label">Team Size</div>
+            <div class="stat-value" id="kpi-team">8</div>
+            <div class="stat-sub" style="color:var(--text-tertiary);">Direct reports</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#ECFDF5;"><i class="ti ti-user-check" style="color:#10B981;"></i></div>
+            <div class="stat-label">Present Today</div>
+            <div class="stat-value" id="kpi-present">7</div>
+            <div class="stat-sub kpi-trend-up" id="kpi-present-sub">87.5% attendance</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#FFFBEB;"><i class="ti ti-clock-hour-4" style="color:#B45309;"></i></div>
+            <div class="stat-label">Pending Approvals</div>
+            <div class="stat-value" id="kpi-pending">0</div>
+            <div class="stat-sub" style="color:var(--warning-text);">Awaiting your action</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#F5F3FF;"><i class="ti ti-chart-bar" style="color:#7C3AED;"></i></div>
+            <div class="stat-label">Team Performance</div>
+            <div class="stat-value" id="kpi-perf">84<span style="font-size:16px;font-weight:500;">%</span></div>
+            <div class="stat-sub kpi-trend-up">↑ 3% this quarter</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card quick-actions-card">
+            <div class="section-title">Quick Actions</div>
+            <div class="quick-actions">
+              <div class="quick-action-btn" onclick="showPage('approvals')">
+                <div class="qa-icon" style="background:#FFFBEB;"><i class="ti ti-checks" style="color:#B45309;"></i></div>
+                <span>Review Approvals</span>
+              </div>
+              <div class="quick-action-btn" onclick="showPage('team')">
+                <div class="qa-icon" style="background:#EFF6FF;"><i class="ti ti-users" style="color:#2563EB;"></i></div>
+                <span>View Team</span>
+              </div>
+              <div class="quick-action-btn" onclick="showPage('announcements')">
+                <div class="qa-icon" style="background:#F5F3FF;"><i class="ti ti-speakerphone" style="color:#7C3AED;"></i></div>
+                <span>Post Announcement</span>
+              </div>
+              <div class="quick-action-btn" onclick="showPage('reports')">
+                <div class="qa-icon" style="background:#ECFDF5;"><i class="ti ti-download" style="color:#10B981;"></i></div>
+                <span>Export Report</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-title">Recent Activity</div>
+            <div class="announcement-list" id="activity-list"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:0;">
+          <div class="section-row">
+            <div class="section-title" style="margin:0;">Team Status Today</div>
+            <a href="#" onclick="showPage('attendance');return false;" style="font-size:13px;color:var(--accent);">View all →</a>
+          </div>
+          <div class="attendance-table" id="home-team-status"></div>
+        </div>
+      </section>
+
+      <!-- ── MY TEAM ── -->
+      <section id="page-team" class="hidden">
+        <div class="card" style="margin-bottom:16px;">
+          <div class="section-row">
+            <div class="section-title" style="margin:0;">My Team</div>
+            <div class="toolbar">
+              <input type="text" id="team-search" class="input" placeholder="Search team..." oninput="renderTeam()" />
+              <select id="team-dept" class="select" onchange="renderTeam()">
+                <option value="">All Departments</option>
+              </select>
+              <button class="btn btn-secondary" onclick="exportTeam()"><i class="ti ti-download"></i> Export</button>
+            </div>
+          </div>
+          <div id="team-table-wrap"></div>
+        </div>
+      </section>
+
+      <!-- ── APPROVALS ── -->
+      <section id="page-approvals" class="hidden">
+        <div class="card">
+          <div class="section-title">Pending Approvals</div>
+          <div class="tab-row">
+            <div class="ptab on" data-tab="leave">Leave Requests</div>
+            <div class="ptab" data-tab="other">Other Requests</div>
+            <div class="ptab" data-tab="history">Decision History</div>
+          </div>
+          <div id="ap-leave"></div>
+          <div id="ap-other" class="hidden"></div>
+          <div id="ap-history" class="hidden"></div>
+        </div>
+      </section>
+
+      <!-- ── TEAM ATTENDANCE ── -->
+      <section id="page-attendance" class="hidden">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-icon" style="background:#ECFDF5;"><i class="ti ti-user-check" style="color:#10B981;"></i></div><div class="stat-label">Present</div><div class="stat-value" id="att-present">7</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#FFFBEB;"><i class="ti ti-clock-exclamation" style="color:#B45309;"></i></div><div class="stat-label">Late</div><div class="stat-value" id="att-late">1</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#FEF2F2;"><i class="ti ti-user-x" style="color:#EF4444;"></i></div><div class="stat-label">Absent</div><div class="stat-value" id="att-absent">0</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#F5F3FF;"><i class="ti ti-plane-departure" style="color:#7C3AED;"></i></div><div class="stat-label">On Leave</div><div class="stat-value" id="att-leave">1</div></div>
+        </div>
+
+        <div class="card">
+          <div class="section-row">
+            <div class="section-title" style="margin:0;">Team Attendance</div>
+            <div class="toolbar">
+              <input type="date" id="att-date" class="input" onchange="renderTeamAttendance()" />
+              <button class="btn btn-secondary" onclick="exportAttendance()"><i class="ti ti-download"></i> Export</button>
+            </div>
+          </div>
+          <div id="team-attendance-table"></div>
+        </div>
+      </section>
+
+      <!-- ── PERFORMANCE ── -->
+      <section id="page-performance" class="hidden">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-icon" style="background:#F5F3FF;"><i class="ti ti-chart-bar" style="color:#7C3AED;"></i></div><div class="stat-label">Team Avg Rating</div><div class="stat-value" id="perf-avg">4.2</div><div class="stat-sub">Out of 5.0</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#ECFDF5;"><i class="ti ti-trophy" style="color:#10B981;"></i></div><div class="stat-label">Top Performer</div><div class="stat-value" id="perf-top" style="font-size:18px;">—</div><div class="stat-sub">This quarter</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#FFFBEB;"><i class="ti ti-target" style="color:#B45309;"></i></div><div class="stat-label">Goals on Track</div><div class="stat-value" id="perf-goals">—</div><div class="stat-sub">Across team</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#FEF2F2;"><i class="ti ti-alert-triangle" style="color:#EF4444;"></i></div><div class="stat-label">Need Attention</div><div class="stat-value" id="perf-low">—</div><div class="stat-sub">Rating &lt; 3.0</div></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Team Performance Overview</div>
+          <div id="perf-team-table"></div>
+        </div>
+      </section>
+
+      <!-- ── APPRAISAL ── -->
+      <section id="page-appraisal" class="hidden">
+        <div class="card">
+          <div class="section-row">
+            <div class="section-title" style="margin:0;">Appraisal Cycle</div>
+            <span class="badge badge-role">H1 2026</span>
+          </div>
+          <div class="appraisal-flow" id="appraisal-flow"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Pending Appraisals</div>
+          <div id="appraisal-list"></div>
+        </div>
+      </section>
+
+      <!-- ── TRAINING ── -->
+      <section id="page-training" class="hidden">
+        <div class="two-col">
+          <div class="card">
+            <div class="section-title">Assign Training</div>
+            <form id="training-form" onsubmit="assignTraining(event)">
+              <div style="margin-bottom:14px;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Course</label>
+                <select id="t-course" class="select" required style="width:100%;"></select>
+              </div>
+              <div style="margin-bottom:14px;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Assign To</label>
+                <select id="t-employee" class="select" required style="width:100%;"></select>
+              </div>
+              <div style="margin-bottom:14px;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Due Date</label>
+                <input type="date" id="t-due" class="input" required style="width:100%;" />
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%;">Assign Course</button>
+            </form>
+          </div>
+          <div class="card">
+            <div class="section-title">Team Training Progress</div>
+            <div id="training-progress"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">All Assignments</div>
+          <div id="training-table"></div>
+        </div>
+      </section>
+
+      <!-- ── PAYROLL ── -->
+      <section id="page-payroll" class="hidden">
+        <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#EFF6FF 0%,#F5F3FF 100%);border:1px solid #DBE7FE;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:12px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:.04em;">My Payroll · This Month</div>
+              <div style="font-size:24px;font-weight:700;color:var(--text-primary);margin-top:4px;" id="my-pay-net">—</div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;" id="my-pay-breakdown">—</div>
+            </div>
+            <span class="pill pill-green"><i class="ti ti-circle-check"></i> Paid</span>
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-icon" style="background:#EFF6FF;"><i class="ti ti-cash" style="color:#2563EB;"></i></div><div class="stat-label">Monthly Payroll</div><div class="stat-value" id="pay-total" style="font-size:20px;">—</div><div class="stat-sub" id="pay-month">—</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#ECFDF5;"><i class="ti ti-trending-up" style="color:#10B981;"></i></div><div class="stat-label">Avg Salary</div><div class="stat-value" id="pay-avg" style="font-size:20px;">—</div><div class="stat-sub">Per employee</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#FFFBEB;"><i class="ti ti-receipt" style="color:#B45309;"></i></div><div class="stat-label">Bonuses (YTD)</div><div class="stat-value" id="pay-bonus" style="font-size:20px;">—</div><div class="stat-sub">2026</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#F5F3FF;"><i class="ti ti-receipt-tax" style="color:#7C3AED;"></i></div><div class="stat-label">Tax Withheld</div><div class="stat-value" id="pay-tax" style="font-size:20px;">—</div><div class="stat-sub">This month</div></div>
+        </div>
+
+        <div class="card">
+          <div class="section-row">
+            <div class="section-title" style="margin:0;">Payroll Summary — You &amp; Your Team</div>
+            <div class="toolbar">
+              <input type="month" id="pay-filter" class="input" />
+              <button class="btn btn-secondary" onclick="exportPayroll()"><i class="ti ti-download"></i> Export</button>
+            </div>
+          </div>
+          <div id="payroll-table"></div>
+        </div>
+      </section>
+
+      <!-- ── REPORTS ── -->
+      <section id="page-reports" class="hidden">
+        <div class="card">
+          <div class="section-title">Reports & Analytics</div>
+          <div class="grid-3">
+            <div class="quick-action-btn" onclick="generateReport('attendance')"><div class="qa-icon" style="background:#EFF6FF;"><i class="ti ti-calendar-stats" style="color:#2563EB;"></i></div><span>Attendance Report</span></div>
+            <div class="quick-action-btn" onclick="generateReport('leave')"><div class="qa-icon" style="background:#F5F3FF;"><i class="ti ti-plane" style="color:#7C3AED;"></i></div><span>Leave Report</span></div>
+            <div class="quick-action-btn" onclick="generateReport('performance')"><div class="qa-icon" style="background:#ECFDF5;"><i class="ti ti-chart-line" style="color:#10B981;"></i></div><span>Performance Report</span></div>
+            <div class="quick-action-btn" onclick="generateReport('payroll')"><div class="qa-icon" style="background:#FFFBEB;"><i class="ti ti-cash" style="color:#B45309;"></i></div><span>Payroll Report</span></div>
+            <div class="quick-action-btn" onclick="generateReport('training')"><div class="qa-icon" style="background:#FEF2F2;"><i class="ti ti-school" style="color:#EF4444;"></i></div><span>Training Report</span></div>
+            <div class="quick-action-btn" onclick="generateReport('headcount')"><div class="qa-icon" style="background:#EEF1F7;"><i class="ti ti-users" style="color:#0F1724;"></i></div><span>Headcount Report</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Key Metrics</div>
+          <div id="report-metrics"></div>
+        </div>
+      </section>
+
+      <!-- ── ANNOUNCEMENTS ── -->
+      <section id="page-announcements" class="hidden">
+        <div class="two-col">
+          <div class="card">
+            <div class="section-title">Post Announcement</div>
+            <form id="ann-form" onsubmit="postAnnouncement(event)">
+              <div style="margin-bottom:14px;"><label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Title</label><input id="ann-title" class="input" required style="width:100%;" /></div>
+              <div style="margin-bottom:14px;"><label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Priority</label><select id="ann-pri" class="select" style="width:100%;"><option value="info">Info</option><option value="important">Important</option><option value="urgent">Urgent</option></select></div>
+              <div style="margin-bottom:14px;"><label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Message</label><textarea id="ann-msg" rows="5" required style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;"></textarea></div>
+              <button type="submit" class="btn btn-primary" style="width:100%;">Publish</button>
+            </form>
+          </div>
+          <div class="card">
+            <div class="section-title">Recent Announcements</div>
+            <div id="ann-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SETTINGS ── -->
+      <section id="page-settings" class="hidden">
+        <div class="card">
+          <div class="section-title">Preferences</div>
+          <div class="setting-row"><div><div class="setting-label">Email notifications</div><div class="setting-sub">Receive approval emails</div></div><label class="switch-wrap"><input type="checkbox" checked><span class="switch-slider"></span></label></div>
+          <div class="setting-row"><div><div class="setting-label">Daily team digest</div><div class="setting-sub">Morning summary at 8 AM</div></div><label class="switch-wrap"><input type="checkbox" checked><span class="switch-slider"></span></label></div>
+          <div class="setting-row"><div><div class="setting-label">Auto-approve recurring leave</div><div class="setting-sub">For pre-approved patterns</div></div><label class="switch-wrap"><input type="checkbox"><span class="switch-slider"></span></label></div>
+          <div class="setting-row"><div><div class="setting-label">Show pay information</div><div class="setting-sub">Display salary in team views</div></div><label class="switch-wrap"><input type="checkbox" checked><span class="switch-slider"></span></label></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div id="toast" style="position:fixed;bottom:24px;right:24px;background:#0F1724;color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;z-index:9999;"></div>
+
+<!-- APPRAISAL REVIEW MODAL -->
+<div class="modal hidden" id="appraisal-modal">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-header">
+      <h2>Complete Performance Appraisal</h2>
+      <button class="modal-close" onclick="closeAppraisalModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="appraisal-form" onsubmit="saveAppraisalReview(event)">
+        <input type="hidden" id="appraisal-emp-id" />
+        <div style="display:flex; gap:12px; align-items:center; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border);">
+          <div id="appraisal-avatar-wrap"></div>
+          <div>
+            <div id="appraisal-emp-name" style="font-weight:700; font-size:15px;"></div>
+            <div id="appraisal-emp-title" style="font-size:12px; color:var(--text-secondary);"></div>
+          </div>
+        </div>
+        <div style="background:var(--bg-surface); padding:12px; border-radius:6px; margin-bottom:18px;">
+          <div style="font-weight:600; font-size:12px; text-transform:uppercase; color:var(--text-tertiary);">Employee Self-Assessment</div>
+          <div style="margin-top:6px; font-size:13px;" id="appraisal-self-text"></div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Manager Rating (1.0 - 5.0)</label>
+          <input type="number" id="appraisal-rating" min="1.0" max="5.0" step="0.1" required class="input" style="width:100%;" />
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Manager Evaluation Comments</label>
+          <textarea id="appraisal-comments" rows="4" required placeholder="Provide feedback on the employee's performance, goals, and growth areas..." style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; font-family:inherit; font-size:13px;"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Submit Evaluation</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- AI CHAT ASSISTANT -->
+<button class="chat-fab" id="chat-fab" onclick="toggleChat()" title="Chat with Crewly AI">
+  <i class="ti ti-message-chatbot" id="chat-fab-icon"></i>
+</button>
+
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <i class="ti ti-robot" style="font-size: 20px;"></i>
+      <div>
+        <span class="chat-header-title">Crewly AI (Manager)</span>
+        <span class="chat-header-status"><span class="chat-status-dot"></span> Online</span>
+      </div>
+    </div>
+    <button class="chat-close-btn" onclick="toggleChat()" title="Close chat">
+      <i class="ti ti-x"></i>
+    </button>
+  </div>
+
+  <div class="chat-messages" id="chat-messages"></div>
+
+  <div class="chat-chips" id="chat-chips">
+    <button class="chat-chip" onclick="handleChatChip('Team attendance')">📋 Team attendance</button>
+    <button class="chat-chip" onclick="handleChatChip('Pending approvals')">📥 Pending approvals</button>
+    <button class="chat-chip" onclick="handleChatChip('Who is late?')">⏰ Who is late?</button>
+    <button class="chat-chip" onclick="handleChatChip('Monthly payroll')">💰 Monthly payroll</button>
+    <button class="chat-chip" onclick="handleChatChip('Performance summary')">⭐ Performance summary</button>
+  </div>
+
+  <div class="chat-input-area">
+    <input type="text" class="chat-input" id="chat-input" placeholder="Ask about your team..." onkeypress="handleChatKeypress(event)" />
+    <button class="chat-send-btn" onclick="sendFromInput()" title="Send message">
+      <i class="ti ti-send"></i>
+    </button>
+  </div>
+</div>
+
+<script src="manager-app.js"></script>

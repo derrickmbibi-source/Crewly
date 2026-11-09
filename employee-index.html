@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crewly — Employee Portal</title>
+  <link rel="stylesheet" href="employee-styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" />
+  <style>
+    .setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
+    .setting-row:last-child{border-bottom:none;}
+    .setting-label{font-size:13px;font-weight:600;color:var(--text,#111827);}
+    .setting-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+    .switch-wrap{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0;}
+    .switch-wrap input{opacity:0;width:0;height:0;}
+    .switch-slider{position:absolute;cursor:pointer;inset:0;background:#D1D5DB;border-radius:22px;transition:.2s;}
+    .switch-slider:before{content:"";position:absolute;height:16px;width:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.2);}
+    .switch-wrap input:checked + .switch-slider{background:#1D4ED8;}
+    .switch-wrap input:checked + .switch-slider:before{transform:translateX(18px);}
+  </style>
+  <script src="crewly-db.js"></script>
+  <script>CrewlyDB.guard('employee');</script>
+  <script src="crewly-ai.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg class="logo-image" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 100" role="img" aria-label="Crewly">
+        <rect class="logo-tile" x="0" y="10" width="80" height="80" rx="22"/>
+        <path d="M52.96 37.04 A18.33 18.33 0 1 0 52.96 62.96" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+        <circle class="logo-bright-fill" cx="52.5" cy="50" r="5"/>
+        <text x="96" y="72" font-family="'Space Grotesk', Inter, Arial, sans-serif" font-size="68" font-weight="700" letter-spacing="-1.5"><tspan class="logo-accent-fill">Crew</tspan><tspan class="logo-ly">ly</tspan></text>
+      </svg>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section">My Space</div>
+      <div class="nav-item active" data-page="home"><i class="ti ti-home"></i> Home</div>
+      <div class="nav-item" data-page="profile"><i class="ti ti-user"></i> My Profile</div>
+      <div class="nav-item" data-page="payslips"><i class="ti ti-receipt"></i> My Payslips</div>
+      <div class="nav-item" data-page="attendance"><i class="ti ti-clock"></i> Attendance</div>
+      <div class="nav-item" data-page="schedule"><i class="ti ti-calendar-time"></i> My Shift Schedule</div>
+
+      <div class="nav-section">Requests</div>
+      <div class="nav-item" data-page="leave"><i class="ti ti-calendar"></i> Leave</div>
+      <div class="nav-item" data-page="requests"><i class="ti ti-file-text"></i> My Requests</div>
+
+      <div class="nav-section">Growth</div>
+      <div class="nav-item" data-page="performance"><i class="ti ti-chart-line"></i> Performance</div>
+      <div class="nav-item" data-page="appraisal"><i class="ti ti-clipboard-check"></i> Appraisal</div>
+      <div class="nav-item" data-page="feedback"><i class="ti ti-messages"></i> Feedback</div>
+      <div class="nav-item" data-page="training"><i class="ti ti-school"></i> Training</div>
+
+      <div class="nav-section">Company</div>
+      <div class="nav-item" data-page="directory"><i class="ti ti-users"></i> Directory</div>
+      <div class="nav-item" data-page="burnout"><i class="ti ti-flame"></i> My Wellbeing</div>
+      <div class="nav-item" data-page="benefits"><i class="ti ti-heart-handshake"></i> Health &amp; Benefits</div>
+
+      <div class="nav-section">Collaborate</div>
+      <div class="nav-item" data-page="gigboard"><i class="ti ti-briefcase"></i> Gig Board</div>
+
+      <div class="nav-item" data-page="analytics"><i class="ti ti-chart-bar"></i> Reports</div>
+
+      <div class="nav-section">Account</div>
+      <div class="nav-item" data-page="settings"><i class="ti ti-settings"></i> Settings</div>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar-wrap">
+        <div class="avatar-sm" style="background:#EFF6FF;color:#1D4ED8;">EA</div>
+        <div class="user-online"></div>
+      </div>
+      <div class="user-info">
+        <div class="user-name">Jessica Eze</div>
+        <div class="user-role">Junior Software Developer</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-title" id="page-title">Home</div>
+          <div class="topbar-breadcrumb" id="page-breadcrumb">Good morning, Jessica</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" style="background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 50%; font-size: 20px; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin-right: 8px; transition: all 0.2s;">
+          <i class="ti ti-moon" id="theme-toggle-icon"></i>
+        </button>
+        <div class="notif-container">
+          <div class="notif-btn" id="notif-btn">
+            <i class="ti ti-bell"></i>
+            <div class="notif-dot" id="notif-dot"></div>
+          </div>
+          <div class="notif-dropdown" id="notif-dropdown">
+            <div class="notif-header">Notifications</div>
+            <div class="notif-list" id="notif-list"></div>
+            <div class="notif-footer"><a href="#" onclick="clearNotifications()">Clear All</a></div>
+          </div>
+        </div>
+        <div class="topbar-avatar" style="background:#FFF1F2;color:#BE185D;">EA</div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- ── HOME ── -->
+      <section id="page-home">
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+          <div class="welcome-text">
+            <div class="welcome-greeting">Good morning, Jessica 👋</div>
+            <div class="welcome-sub">Here's what's happening with your account today.</div>
+          </div>
+          <div class="welcome-date">
+            <div class="date-day" id="today-day"></div>
+            <div class="date-label" id="today-date"></div>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#EFF6FF;"><i class="ti ti-calendar-event" style="color:#2563EB;"></i></div>
+            <div class="stat-label">Annual Leave Left</div>
+            <div class="stat-value" id="leave-balance">12</div>
+            <div class="stat-sub" id="leave-used" style="color:var(--success-text);">2 days used this year</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#ECFDF5;"><i class="ti ti-heart" style="color:#10B981;"></i></div>
+            <div class="stat-label">Sick Leave Left</div>
+            <div class="stat-value" id="sick-balance">9</div>
+            <div class="stat-sub" style="color:var(--text-tertiary);">1 day used this year</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#F5F3FF;"><i class="ti ti-chart-bar" style="color:#7C3AED;"></i></div>
+            <div class="stat-label">Performance Score</div>
+            <div class="stat-value" id="perf-score">82<span style="font-size:16px;font-weight:500;">%</span></div>
+            <div class="stat-sub" style="color:var(--accent-text);">H1 2026 review</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#FFFBEB;"><i class="ti ti-cash" style="color:#B45309;"></i></div>
+            <div class="stat-label">Last Net Pay</div>
+            <div class="stat-value" id="last-pay" style="font-size:20px;">₦357k</div>
+            <div class="stat-sub" style="color:var(--text-tertiary);">May 2026</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <!-- Quick Actions -->
+          <div class="card">
+            <div class="section-title">Quick Actions</div>
+            <div class="quick-actions">
+              <div class="quick-action-btn" onclick="showPage('leave')">
+                <div class="qa-icon" style="background:#EFF6FF;"><i class="ti ti-calendar-plus" style="color:#2563EB;"></i></div>
+                <span>Request Leave</span>
+              </div>
+              <div class="quick-action-btn" onclick="showPage('payslips')">
+                <div class="qa-icon" style="background:#ECFDF5;"><i class="ti ti-download" style="color:#10B981;"></i></div>
+                <span>Download Payslip</span>
+              </div>
+              <div class="quick-action-btn" onclick="showPage('profile')">
+                <div class="qa-icon" style="background:#F5F3FF;"><i class="ti ti-user-edit" style="color:#7C3AED;"></i></div>
+                <span>Update Profile</span>
+              </div>
+              <div class="quick-action-btn" onclick="showPage('training')">
+                <div class="qa-icon" style="background:#FFFBEB;"><i class="ti ti-school" style="color:#B45309;"></i></div>
+                <span>My Courses</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Announcements -->
+          <div class="card">
+            <div class="section-title">Company Announcements</div>
+            <div class="announcement-list" id="announcement-list"></div>
+          </div>
+        </div>
+
+        <div class="two-col" style="margin-bottom:0;">
+          <!-- Upcoming Schedule -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="section-title">My Upcoming Schedule</div>
+            <div class="schedule-list" id="schedule-list"></div>
+          </div>
+
+          <!-- Live Activity Feed -->
+          <div class="card" style="margin-bottom:0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div class="section-title" style="margin:0;">Live Activity Feed</div>
+              <button class="btn btn-secondary btn-sm" onclick="simulateRandomEvent()" style="padding: 4px 8px; font-size: 11px;">
+                <i class="ti ti-player-play"></i> Simulate Event
+              </button>
+            </div>
+            <div id="live-activity-list" class="activity-list" style="max-height: 250px; overflow-y: auto;">
+              <!-- Simulated events appear here -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── MY PROFILE ── -->
+      <section id="page-profile" class="hidden">
+        <div class="card">
+          <div class="profile-header">
+            <div class="avatar-xl" style="background:#FFF1F2;color:#BE185D;">EA</div>
+            <div class="profile-info">
+              <h2 id="profile-name">Jessica Eze</h2>
+              <p id="profile-title">Junior Software Developer · Engineering Department</p>
+              <div class="profile-badges">
+                <span class="badge badge-active">● Active</span>
+                <span class="badge badge-dept">Full-time</span>
+                <span class="badge badge-role" id="profile-id">EMP-004</span>
+              </div>
+            </div>
+            <div class="profile-actions">
+              <button class="btn btn-primary" onclick="toggleEditProfile()"><i class="ti ti-pencil"></i> Edit Profile</button>
+            </div>
+          </div>
+
+          <div class="tab-row">
+            <div class="ptab on" data-tab="info">Personal Info</div>
+            <div class="ptab" data-tab="contact">Contact</div>
+            <div class="ptab" data-tab="docs">Documents</div>
+          </div>
+
+          <div id="pp-info">
+            <div class="field-grid" id="profile-info-grid"></div>
+          </div>
+
+          <div id="pp-contact" class="hidden">
+            <div class="field-grid" id="profile-contact-grid"></div>
+          </div>
+
+          <div id="pp-docs" class="hidden">
+            <div class="doc-list" id="doc-list"></div>
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+              <h3 style="margin-bottom: 15px;">Upload Document</h3>
+              <input type="file" id="doc-upload" style="margin-bottom: 10px;">
+              <button class="btn btn-primary" onclick="uploadDocument()"><i class="ti ti-upload"></i> Upload</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PAYSLIPS ── -->
+      <section id="page-payslips" class="hidden">
+        <div class="card" style="margin-bottom:16px;">
+          <div class="pay-summary" id="pay-summary"></div>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div class="section-title" style="margin: 0;">Payslip History</div>
+            <input type="month" id="payslip-filter" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+          </div>
+          <div class="payslip-list" id="payslip-list"></div>
+        </div>
+      </section>
+
+      <!-- ── HEALTH & BENEFITS ── -->
+      <section id="page-benefits" class="hidden">
+        <div class="stat-grid" style="margin-bottom:16px;">
+          <div class="stat-card"><div class="stat-icon" style="background:#ECFDF5;"><i class="ti ti-shield-check" style="color:#10B981;"></i></div><div class="stat-label">Active Benefits</div><div class="stat-value" id="bn-active" style="font-size:20px;">1</div><div class="stat-sub">Enrolled plans</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#EFF6FF;"><i class="ti ti-pill" style="color:#2563EB;"></i></div><div class="stat-label">Medication Coverage</div><div class="stat-value" id="bn-status" style="font-size:20px;">Active</div><div class="stat-sub" id="bn-period">—</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#FFFBEB;"><i class="ti ti-wallet" style="color:#B45309;"></i></div><div class="stat-label">Your Contribution</div><div class="stat-value" id="bn-emp-contrib" style="font-size:20px;">—</div><div class="stat-sub">Monthly · auto‑deducted</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#F5F3FF;"><i class="ti ti-building-bank" style="color:#7C3AED;"></i></div><div class="stat-label">Employer Pays</div><div class="stat-value" id="bn-er-contrib" style="font-size:20px;">—</div><div class="stat-sub">Monthly · no salary impact</div></div>
+        </div>
+
+        <div class="card benefit-card">
+          <div class="benefit-header">
+            <div class="benefit-title-wrap">
+              <div class="benefit-icon"><i class="ti ti-pill"></i></div>
+              <div>
+                <div class="benefit-title">💊 Medication Coverage</div>
+                <div class="benefit-sub" id="bn-plan-line">—</div>
+              </div>
+            </div>
+            <span class="pill pill-green" id="bn-enroll-pill"><i class="ti ti-circle-check"></i> Enrolled</span>
+          </div>
+
+          <div class="benefit-info-grid">
+            <div class="info-tile"><div class="info-label"><i class="ti ti-building"></i> Insurance Provider</div><div class="info-value" id="bn-provider">—</div></div>
+            <div class="info-tile"><div class="info-label"><i class="ti ti-clipboard-list"></i> Plan Name</div><div class="info-value" id="bn-plan">—</div></div>
+            <div class="info-tile"><div class="info-label"><i class="ti ti-calendar"></i> Coverage Period</div><div class="info-value" id="bn-coverage-period">—</div></div>
+            <div class="info-tile"><div class="info-label"><i class="ti ti-id"></i> Policy Number</div><div class="info-value" id="bn-policy">—</div></div>
+            <div class="info-tile"><div class="info-label"><i class="ti ti-user-dollar"></i> Employee Contribution</div><div class="info-value" id="bn-emp-c2">—</div></div>
+            <div class="info-tile"><div class="info-label"><i class="ti ti-briefcase"></i> Employer Contribution</div><div class="info-value" id="bn-er-c2">—</div></div>
+          </div>
+
+          <div class="benefit-section-grid">
+            <div>
+              <div class="benefit-subhead"><i class="ti ti-pills"></i> Covered Medications</div>
+              <div class="med-chip-list" id="bn-meds"></div>
+            </div>
+            <div>
+              <div class="benefit-subhead"><i class="ti ti-gauge"></i> Coverage Limits</div>
+              <div class="limit-list" id="bn-limits"></div>
+            </div>
+          </div>
+
+          <div class="benefit-actions">
+            <button class="btn btn-primary" onclick="downloadBenefitCard()"><i class="ti ti-download"></i> Download Benefit Card</button>
+            <button class="btn btn-secondary" onclick="findHospitals()"><i class="ti ti-map-pin"></i> Find Participating Hospitals</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <div class="section-title"><i class="ti ti-receipt-2"></i> Prescription Claims History</div>
+          <div id="bn-claims"></div>
+        </div>
+      </section>
+
+
+
+      <!-- ── ATTENDANCE ── -->
+      <section id="page-attendance" class="hidden">
+        <div class="two-col">
+          <div class="card">
+            <div class="section-title">Clock In/Out</div>
+            <div style="text-align: center; padding: 20px;">
+              <div id="current-time" style="font-size: 32px; font-weight: 700; margin-bottom: 20px;">--:--:--</div>
+              <button class="btn btn-primary" id="clock-btn" onclick="clockInOut()" style="width: 100%; padding: 12px;">Clock In</button>
+              <div id="attendance-status" style="margin-top: 15px; font-size: 13px; color: var(--text-tertiary);"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-title">Today's Summary</div>
+            <div class="attendance-summary" id="attendance-summary"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div class="section-title" style="margin: 0;">Attendance History</div>
+            <div style="display: flex; gap: 10px;">
+              <input type="date" id="attendance-from" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+              <input type="date" id="attendance-to" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+              <button class="btn btn-secondary" onclick="filterAttendance()">Filter</button>
+            </div>
+          </div>
+          <div class="attendance-table" id="attendance-table"></div>
+        </div>
+      </section>
+
+      <!-- ── LEAVE ── -->
+      <section id="page-leave" class="hidden">
+        <div class="two-col">
+          <div class="card">
+            <div class="section-title">Request Leave</div>
+            <form id="leave-form" onsubmit="submitLeave(event)">
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Leave Type</label>
+                <select id="leave-type" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                  <option value="">Select leave type</option>
+                  <option value="annual">Annual Leave</option>
+                  <option value="sick">Sick Leave</option>
+                  <option value="casual">Casual Leave</option>
+                  <option value="unpaid">Unpaid Leave</option>
+                </select>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Start Date</label>
+                  <input type="date" id="leave-start" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                </div>
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">End Date</label>
+                  <input type="date" id="leave-end" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                </div>
+              </div>
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Reason</label>
+                <textarea id="leave-reason" rows="4" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit;"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Request</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="section-title">Leave Balance</div>
+            <div class="leave-balance-list" id="leave-balance-list"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div class="section-title" style="margin: 0;">Leave History</div>
+            <select id="leave-filter" onchange="filterLeave()" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="leave-history-table" id="leave-history-table"></div>
+        </div>
+      </section>
+
+      <!-- ── REQUESTS ── -->
+      <section id="page-requests" class="hidden">
+        <div class="card">
+          <div class="section-title">My Requests</div>
+          <div class="tab-row">
+            <div class="ptab on" data-tab="all">All</div>
+            <div class="ptab" data-tab="pending">Pending</div>
+            <div class="ptab" data-tab="approved">Approved</div>
+            <div class="ptab" data-tab="rejected">Rejected</div>
+          </div>
+          <div id="pp-all" class="request-list" id="request-all"></div>
+          <div id="pp-pending" class="request-list hidden" id="request-pending"></div>
+          <div id="pp-approved" class="request-list hidden" id="request-approved"></div>
+          <div id="pp-rejected" class="request-list hidden" id="request-rejected"></div>
+        </div>
+      </section>
+
+      <!-- ── PERFORMANCE ── -->
+      <section id="page-performance" class="hidden">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#F5F3FF;"><i class="ti ti-chart-bar" style="color:#7C3AED;"></i></div>
+            <div class="stat-label">Overall Rating</div>
+            <div class="stat-value" id="perf-overall">4.5</div>
+            <div class="stat-sub">Out of 5.0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#ECFDF5;"><i class="ti ti-clipboard-check" style="color:#10B981;"></i></div>
+            <div class="stat-label">Reviews This Year</div>
+            <div class="stat-value" id="perf-reviews">2</div>
+            <div class="stat-sub">Completed reviews</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#FFFBEB;"><i class="ti ti-target" style="color:#B45309;"></i></div>
+            <div class="stat-label">Goals Completed</div>
+            <div class="stat-value" id="perf-goals">8/10</div>
+            <div class="stat-sub">This quarter</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#FEF2F2;"><i class="ti ti-trending-up" style="color:#EF4444;"></i></div>
+            <div class="stat-label">Performance Trend</div>
+            <div class="stat-value" style="font-size: 20px;">↑ 5%</div>
+            <div class="stat-sub">vs last quarter</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="section-title">Performance Metrics</div>
+            <div class="metrics-list" id="metrics-list"></div>
+          </div>
+
+          <div class="card">
+            <div class="section-title">Recent Reviews</div>
+            <div class="review-list" id="review-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── APPRAISAL ── -->
+      <section id="page-appraisal" class="hidden">
+        <!-- Workflow tracker -->
+        <div class="card">
+          <div class="section-title">Appraisal Workflow</div>
+          <div class="appraisal-flow" id="appraisal-flow"></div>
+        </div>
+
+        <div class="two-col">
+          <!-- Start / Self-assessment form -->
+          <div class="card">
+            <div class="section-row">
+              <div class="section-title" style="margin:0;">My Self-Assessment</div>
+              <span id="appraisal-cycle-badge" class="badge badge-role">H1 2026</span>
+            </div>
+            <form id="appraisal-form" onsubmit="submitAppraisal(event)">
+              <div id="appraisal-competencies"></div>
+
+              <div style="margin-top:18px;">
+                <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Key Achievements</label>
+                <textarea id="appraisal-achievements" rows="3" placeholder="Summarise your main accomplishments this cycle..." style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; font-size:13px; font-family:inherit;"></textarea>
+              </div>
+              <div style="margin-top:14px;">
+                <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Goals for Next Cycle</label>
+                <textarea id="appraisal-goals" rows="3" placeholder="What do you want to focus on next?" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; font-size:13px; font-family:inherit;"></textarea>
+              </div>
+
+              <button type="submit" id="appraisal-submit-btn" class="btn btn-primary" style="width:100%; margin-top:18px;">
+                <i class="ti ti-send"></i> Submit to Manager
+              </button>
+              <div id="appraisal-locked-note" class="appraisal-alert hidden" style="margin-top:14px;">
+                <i class="ti ti-lock"></i>
+                <span id="appraisal-locked-text"></span>
+              </div>
+            </form>
+          </div>
+
+          <!-- Review chain feedback -->
+          <div class="card">
+            <div class="section-title">Review &amp; Feedback</div>
+            <div id="appraisal-review-chain"></div>
+          </div>
+        </div>
+
+        <!-- History -->
+        <div class="card">
+          <div class="section-title">Appraisal History</div>
+          <div class="appraisal-history-table" id="appraisal-history-table"></div>
+        </div>
+      </section>
+
+      <!-- ── TRAINING ── -->
+      <section id="page-training" class="hidden">
+        <div class="card">
+          <div class="section-title">Training & Development</div>
+          <div class="tab-row">
+            <div class="ptab on" data-tab="available">Available</div>
+            <div class="ptab" data-tab="enrolled">Enrolled</div>
+            <div class="ptab" data-tab="completed">Completed</div>
+          </div>
+          <div id="pp-available" class="course-list" id="course-available"></div>
+          <div id="pp-enrolled" class="course-list hidden" id="course-enrolled"></div>
+          <div id="pp-completed" class="course-list hidden" id="course-completed"></div>
+        </div>
+      </section>
+
+      <!-- ── ANALYTICS ── -->
+      <section id="page-analytics" class="hidden">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#EFF6FF;"><i class="ti ti-users" style="color:#2563EB;"></i></div>
+            <div class="stat-label">Total Employees</div>
+            <div class="stat-value" id="total-employees">245</div>
+            <div class="stat-sub">Active employees</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#ECFDF5;"><i class="ti ti-calendar-check" style="color:#10B981;"></i></div>
+            <div class="stat-label">Attendance Rate</div>
+            <div class="stat-value" id="attendance-rate">94%</div>
+            <div class="stat-sub">This month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#FFFBEB;"><i class="ti ti-calendar-off" style="color:#B45309;"></i></div>
+            <div class="stat-label">Avg Leave Days</div>
+            <div class="stat-value" id="avg-leave">4.2</div>
+            <div class="stat-sub">Per employee</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#F5F3FF;"><i class="ti ti-school" style="color:#7C3AED;"></i></div>
+            <div class="stat-label">Training Hours</div>
+            <div class="stat-value" id="training-hours">1,240</div>
+            <div class="stat-sub">Completed this year</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="section-title">Leave Usage by Type</div>
+            <div class="chart-container" id="leave-chart"></div>
+          </div>
+
+          <div class="card">
+            <div class="section-title">Performance Distribution</div>
+            <div class="chart-container" id="performance-chart"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Department Statistics</div>
+          <div class="stats-table" id="dept-stats"></div>
+        </div>
+      </section>
+
+
+      <!-- ── GIG BOARD ── -->
+      <section id="page-gigboard" class="hidden">
+        <div class="stat-grid" id="gig-stats"></div>
+
+        <div class="card" style="margin-bottom: 16px;">
+          <div class="section-title">Browse by Category</div>
+          <div id="skill-category-chips" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card" style="flex: 2;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap:wrap; gap:8px;">
+              <div class="section-title" style="margin: 0;">Gigs Feed</div>
+              <div style="display: flex; gap: 8px; flex-wrap:wrap;">
+                <select id="gig-status-filter" onchange="filterGigs()" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                  <option value="open" selected>Open</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="">All Statuses</option>
+                </select>
+                <select id="gig-urgency-filter" onchange="filterGigs()" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                  <option value="">All Urgency</option>
+                  <option value="high">🔴 High</option>
+                  <option value="medium">🟡 Medium</option>
+                  <option value="low">🟢 Low</option>
+                </select>
+                <select id="gig-skill-filter" onchange="filterGigs()" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                  <option value="">All Skills</option>
+                </select>
+              </div>
+            </div>
+            <div id="gig-feed"></div>
+          </div>
+
+          <div style="flex: 1;">
+            <div class="card">
+              <div class="section-title">Post a Gig</div>
+              <form id="gig-form" onsubmit="postGig(event)">
+                <div style="margin-bottom: 14px;">
+                  <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Title</label>
+                  <input type="text" id="gig-title" required placeholder="e.g. Design a flyer" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                </div>
+                <div style="margin-bottom: 14px;">
+                  <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Description</label>
+                  <textarea id="gig-description" required rows="3" placeholder="What do you need done?" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit;"></textarea>
+                </div>
+                <div style="margin-bottom: 14px;">
+                  <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Category</label>
+                  <select id="gig-category" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;"></select>
+                </div>
+                <div style="margin-bottom: 14px;">
+                  <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Required Skills</label>
+                  <input type="text" id="gig-skills" required placeholder="e.g. Figma, UI/UX, React" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                  <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px;">Comma-separated</div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+                  <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Urgency</label>
+                    <select id="gig-urgency" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                      <option value="low">🟢 Low</option>
+                      <option value="medium" selected>🟡 Medium</option>
+                      <option value="high">🔴 High</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Est. Hours</label>
+                    <input type="number" id="gig-hours" required min="1" max="100" placeholder="e.g. 8" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="ti ti-plus"></i> Post Gig</button>
+              </form>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+              <div class="section-title">My Skills</div>
+              <div id="my-skills-display" style="margin-bottom: 10px;"></div>
+              <form onsubmit="addMySkill(event)" style="display:flex; gap:6px;">
+                <input type="text" id="new-skill-input" placeholder="Add a skill (e.g. Figma)" style="flex:1; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                <button type="submit" class="btn btn-primary" style="padding:6px 12px;"><i class="ti ti-plus"></i></button>
+              </form>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+              <div class="section-title">Suggested Matches</div>
+              <div id="gig-suggested-matches" style="font-size: 13px; color: var(--text-secondary);">Gigs that match your skillset will appear here.</div>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+              <div class="section-title">My Posted Gigs</div>
+              <div id="my-posted-gigs"></div>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+              <div class="section-title">My Applications</div>
+              <div id="my-applications"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px; flex-wrap:wrap; gap:8px;">
+            <div class="section-title" style="margin:0;">Skill Directory</div>
+            <input type="text" id="skill-employee-search" oninput="renderSkillEmployees()" placeholder="Search people or skills..." style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; min-width: 240px;">
+          </div>
+          <div id="skill-employee-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;"></div>
+        </div>
+      </section>
+
+      <!-- ── BURNOUT & PULSE ── -->
+      <section id="page-burnout" class="hidden">
+        <div class="stat-grid" id="burnout-stats"></div>
+
+        <div class="two-col">
+          <!-- Team Burnout Risk Table -->
+          <div class="card" style="flex: 1.5;">
+            <div class="section-title">My Wellbeing Snapshot</div>
+            <div style="overflow-x: auto;">
+              <table class="table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--border); color: var(--text-secondary);">
+                    <th style="padding: 10px 8px;">Employee</th>
+                    <th style="padding: 10px 8px;">Risk Score</th>
+                    <th style="padding: 10px 8px;">Risk Level</th>
+                    <th style="padding: 10px 8px;">Key Signals</th>
+                    <th style="padding: 10px 8px; text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="burnout-table-body">
+                  <!-- Populated by updateBurnoutPage() -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pulse and Feedback Form -->
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+            <div class="card">
+              <div class="section-title">Your Weekly Pulse</div>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">How was your week, Jessica?</p>
+              <form id="pulse-form" onsubmit="submitPulse(event)">
+                <!-- Emojis row -->
+                <div class="pulse-emojis-row" style="margin-bottom: 16px;">
+                  <button type="button" class="pulse-emoji-btn" data-rating="1" onclick="selectPulseRating(1)">😢</button>
+                  <button type="button" class="pulse-emoji-btn" data-rating="2" onclick="selectPulseRating(2)">😕</button>
+                  <button type="button" class="pulse-emoji-btn" data-rating="3" onclick="selectPulseRating(3)">😐</button>
+                  <button type="button" class="pulse-emoji-btn" data-rating="4" onclick="selectPulseRating(4)">🙂</button>
+                  <button type="button" class="pulse-emoji-btn" data-rating="5" onclick="selectPulseRating(5)">😄</button>
+                </div>
+                
+                <!-- Project association -->
+                <div style="margin-bottom: 12px;">
+                  <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Associate with Project</label>
+                  <select id="pulse-project" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                    <option value="General">General / Administrative</option>
+                    <option value="Q2 Launch Campaign">Q2 Launch Campaign</option>
+                    <option value="Website Revamp">Website Revamp</option>
+                    <option value="Brand Video Production">Brand Video Production</option>
+                  </select>
+                </div>
+
+                <!-- Comments -->
+                <div style="margin-bottom: 12px;">
+                  <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Comments / Notes</label>
+                  <textarea id="pulse-comment" rows="3" placeholder="What's going well or stressing you out?" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit;"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="ti ti-check"></i> Submit Pulse</button>
+              </form>
+            </div>
+
+            <!-- Pulse History -->
+            <div class="card">
+              <div class="section-title">Recent Pulse Reviews</div>
+              <div class="timeline" id="pulse-timeline" style="max-height: 250px; overflow-y: auto;">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SHIFT SCHEDULE & SUBSTITUTION ── -->
+      <section id="page-schedule" class="hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 style="margin: 0; font-size: 18px; font-weight: 700;">My Weekly Shift Schedule</h2>
+            <p style="margin: 4px 0 0; font-size: 13px; color: var(--text-secondary);">Week of June 15, 2026 — June 19, 2026</p>
+          </div>
+          <button class="btn btn-primary" onclick="openAbsenceModal()"><i class="ti ti-alert-triangle"></i> Call in Sick / Report Absence</button>
+        </div>
+
+        <div class="two-col">
+          <!-- Weekly Schedule Grid -->
+          <div class="card" style="flex: 2; overflow-x: auto;">
+            <table class="table" style="width: 100%; border-collapse: collapse; min-width: 600px; font-size: 13px; text-align: left;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border); color: var(--text-secondary);">
+                  <th style="padding: 12px 10px; width: 180px;">Team Member</th>
+                  <th style="padding: 12px 10px;">Mon 15</th>
+                  <th style="padding: 12px 10px;">Tue 16</th>
+                  <th style="padding: 12px 10px;">Wed 17</th>
+                  <th style="padding: 12px 10px;">Thu 18</th>
+                  <th style="padding: 12px 10px;">Fri 19</th>
+                </tr>
+              </thead>
+              <tbody id="schedule-grid-body">
+                <!-- Dynamically populated by updateSchedulePage() -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Substitution Finder Sidebar -->
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+            <div class="card" id="substitution-panel">
+              <div class="section-title">Substitution Finder</div>
+              <div id="sub-panel-content" style="font-size: 13px; color: var(--text-secondary);">
+                Select "Call in Sick" or report an absence to find automatic substitution matches here.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EMPLOYEE DIRECTORY -->
+      <section id="page-directory" class="hidden">
+        <div class="card">
+          <div class="section-title">Employee Directory</div>
+          
+          <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+            <input type="text" id="directory-search" placeholder="Search by name, department, or title..." style="flex: 1; min-width: 250px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+            <select id="directory-filter" onchange="filterDirectory()" style="padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+              <option value="">All Departments</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Sales">Sales</option>
+              <option value="HR">HR</option>
+              <option value="Finance">Finance</option>
+            </select>
+            <button class="btn btn-secondary" onclick="searchDirectory()" style="padding: 10px 20px;">Search</button>
+          </div>
+
+          <div class="employee-grid" id="employee-grid"></div>
+        </div>
+      </section>
+
+      <!-- CONTINUOUS FEEDBACK -->
+      <section id="page-feedback" class="hidden">
+        <div class="stat-grid" id="feedback-stats"></div>
+
+        <div class="two-col" style="margin-top: 20px;">
+          <!-- Weekly Check-in -->
+          <div class="card">
+            <div class="section-title"><i class="ti ti-calendar-check"></i> Weekly Check-in</div>
+            <div id="checkin-status" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;"></div>
+            <form id="checkin-form" onsubmit="submitCheckin(event)">
+              <div style="margin-bottom: 12px;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">How was your week? (1-5)</label>
+                <select id="checkin-mood" required style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+                  <option value="">Select…</option>
+                  <option value="5">5 — Great</option>
+                  <option value="4">4 — Good</option>
+                  <option value="3">3 — Okay</option>
+                  <option value="2">2 — Tough</option>
+                  <option value="1">1 — Struggling</option>
+                </select>
+              </div>
+              <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Wins this week</label>
+                <textarea id="checkin-wins" rows="2" required style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;"></textarea>
+              </div>
+              <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Blockers / support needed</label>
+                <textarea id="checkin-blockers" rows="2" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary" style="padding:10px 20px;">Submit Check-in</button>
+            </form>
+          </div>
+
+          <!-- Give Feedback -->
+          <div class="card">
+            <div class="section-title"><i class="ti ti-send"></i> Give Peer / Project Feedback</div>
+            <form id="give-feedback-form" onsubmit="submitFeedback(event)">
+              <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Recipient</label>
+                <select id="fb-recipient" required style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;"></select>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                <div>
+                  <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Type</label>
+                  <select id="fb-type" required style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+                    <option value="peer">Peer</option>
+                    <option value="project">Project-based</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Project / Context</label>
+                  <input type="text" id="fb-project" placeholder="e.g. Q2 Launch" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+                </div>
+              </div>
+              <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Rating</label>
+                <select id="fb-rating" required style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+                  <option value="5">★★★★★ Outstanding</option>
+                  <option value="4">★★★★ Strong</option>
+                  <option value="3">★★★ Solid</option>
+                  <option value="2">★★ Needs improvement</option>
+                  <option value="1">★ Concern</option>
+                </select>
+              </div>
+              <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Feedback</label>
+                <textarea id="fb-message" rows="3" required style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary" style="padding:10px 20px;">Send Feedback</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Performance Trend -->
+        <div class="card" style="margin-top:20px;">
+          <div class="section-title"><i class="ti ti-trending-up"></i> Performance Trend (last 8 weeks)</div>
+          <div id="trend-chart" style="display:flex;align-items:flex-end;gap:8px;height:160px;padding:10px 0;border-bottom:1px solid var(--border);"></div>
+          <div id="trend-labels" style="display:flex;gap:8px;margin-top:6px;font-size:11px;color:var(--text-secondary);"></div>
+        </div>
+
+        <!-- Manager Feedback Visibility -->
+        <div class="card" style="margin-top:20px;">
+          <div class="section-title"><i class="ti ti-user-check"></i> Manager Feedback</div>
+          <div id="manager-feedback-list"></div>
+        </div>
+
+        <!-- Feedback Timeline -->
+        <div class="card" style="margin-top:20px;">
+          <div class="section-title"><i class="ti ti-history"></i> Feedback History Timeline</div>
+          <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+            <button class="btn btn-secondary" onclick="filterFeedback('all')" style="padding:6px 14px;font-size:12px;">All</button>
+            <button class="btn btn-secondary" onclick="filterFeedback('checkin')" style="padding:6px 14px;font-size:12px;">Check-ins</button>
+            <button class="btn btn-secondary" onclick="filterFeedback('peer')" style="padding:6px 14px;font-size:12px;">Peer</button>
+            <button class="btn btn-secondary" onclick="filterFeedback('manager')" style="padding:6px 14px;font-size:12px;">Manager</button>
+            <button class="btn btn-secondary" onclick="filterFeedback('project')" style="padding:6px 14px;font-size:12px;">Project</button>
+          </div>
+          <div id="feedback-timeline"></div>
+        </div>
+      </section>
+
+      <!-- ── SETTINGS ── -->
+      <section id="page-settings" class="hidden">
+        <div class="two-col">
+          <!-- Account Settings -->
+          <div class="card">
+            <div class="section-title">Account Settings</div>
+            <form id="settings-account-form" onsubmit="saveAccountSettings(event)">
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Full Name</label>
+                <input type="text" id="set-name" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+              </div>
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Work Email</label>
+                <input type="email" id="set-email" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+              </div>
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Phone Number</label>
+                <input type="tel" id="set-phone" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Language</label>
+                  <select id="set-language" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                    <option value="en">English</option>
+                    <option value="fr">French</option>
+                    <option value="es">Spanish</option>
+                    <option value="ar">Arabic</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Timezone</label>
+                  <select id="set-timezone" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                    <option value="WAT">Africa/Lagos (WAT)</option>
+                    <option value="GMT">Europe/London (GMT)</option>
+                    <option value="EST">America/New_York (EST)</option>
+                    <option value="CET">Europe/Paris (CET)</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%;">Save Changes</button>
+            </form>
+          </div>
+
+          <!-- Security -->
+          <div class="card">
+            <div class="section-title">Security</div>
+            <form id="settings-security-form" onsubmit="changePassword(event)">
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Current Password</label>
+                <input type="password" id="set-pass-current" required style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+              </div>
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">New Password</label>
+                <input type="password" id="set-pass-new" required minlength="8" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+              </div>
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Confirm New Password</label>
+                <input type="password" id="set-pass-confirm" required minlength="8" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #F9FAFB; border-radius: 6px; margin-bottom: 16px;">
+                <div>
+                  <div style="font-size: 13px; font-weight: 600;">Two-Factor Authentication</div>
+                  <div style="font-size: 12px; color: var(--muted);">Add an extra layer of security</div>
+                </div>
+                <label class="switch-wrap" style="position: relative; display: inline-block; width: 40px; height: 22px;">
+                  <input type="checkbox" id="set-2fa" style="opacity:0; width:0; height:0;">
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%;">Update Password</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <!-- Notifications -->
+          <div class="card">
+            <div class="section-title">Notification Preferences</div>
+            <div id="settings-notifications">
+              <div class="setting-row" data-key="notif_email">
+                <div>
+                  <div class="setting-label">Email Notifications</div>
+                  <div class="setting-sub">Receive updates by email</div>
+                </div>
+                <label class="switch-wrap"><input type="checkbox" class="set-toggle" data-key="notif_email"><span class="switch-slider"></span></label>
+              </div>
+              <div class="setting-row" data-key="notif_push">
+                <div>
+                  <div class="setting-label">Push Notifications</div>
+                  <div class="setting-sub">In-app alerts for activity</div>
+                </div>
+                <label class="switch-wrap"><input type="checkbox" class="set-toggle" data-key="notif_push"><span class="switch-slider"></span></label>
+              </div>
+              <div class="setting-row" data-key="notif_payslip">
+                <div>
+                  <div class="setting-label">Payslip Alerts</div>
+                  <div class="setting-sub">Notify when a new payslip is available</div>
+                </div>
+                <label class="switch-wrap"><input type="checkbox" class="set-toggle" data-key="notif_payslip"><span class="switch-slider"></span></label>
+              </div>
+              <div class="setting-row" data-key="notif_leave">
+                <div>
+                  <div class="setting-label">Leave Updates</div>
+                  <div class="setting-sub">Notify on leave request status changes</div>
+                </div>
+                <label class="switch-wrap"><input type="checkbox" class="set-toggle" data-key="notif_leave"><span class="switch-slider"></span></label>
+              </div>
+              <div class="setting-row" data-key="notif_announcements">
+                <div>
+                  <div class="setting-label">Company Announcements</div>
+                  <div class="setting-sub">Town halls, policy updates, events</div>
+                </div>
+                <label class="switch-wrap"><input type="checkbox" class="set-toggle" data-key="notif_announcements"><span class="switch-slider"></span></label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Appearance & Privacy -->
+          <div class="card">
+            <div class="section-title">Appearance &amp; Privacy</div>
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Theme</label>
+              <select id="set-theme" onchange="saveAppearance()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                <option value="light">Light</option>
+                <option value="system">System Default</option>
+              </select>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Density</label>
+              <select id="set-density" onchange="saveAppearance()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                <option value="comfortable">Comfortable</option>
+                <option value="compact">Compact</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Show profile in directory</div>
+                <div class="setting-sub">Other employees can find you</div>
+              </div>
+              <label class="switch-wrap"><input type="checkbox" class="set-toggle" data-key="privacy_directory"><span class="switch-slider"></span></label>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Share activity status</div>
+                <div class="setting-sub">Display online indicator to teammates</div>
+              </div>
+              <label class="switch-wrap"><input type="checkbox" class="set-toggle" data-key="privacy_activity"><span class="switch-slider"></span></label>
+            </div>
+
+            <div style="border-top: 1px solid var(--border); margin-top: 18px; padding-top: 16px;">
+              <div class="section-title" style="font-size: 14px;">Sessions</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 0;">
+                <div>
+                  <div style="font-size: 13px; font-weight: 600;">This device</div>
+                  <div style="font-size: 12px; color: var(--muted);">Chrome · Lagos, NG · Active now</div>
+                </div>
+                <span class="badge badge-active">Current</span>
+              </div>
+              <button type="button" class="btn btn-secondary" onclick="signOutAll()" style="width: 100%; margin-top: 8px;">Sign out of all other sessions</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EMPLOYEE PROFILE MODAL -->
+
+      <div class="modal hidden" id="employee-modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Employee Profile</h2>
+            <button class="modal-close" onclick="closeEmployeeModal()">&times;</button>
+          </div>
+          <div class="modal-body" id="employee-modal-body"></div>
+        </div>
+      </div>
+
+      <!-- ABSENCE REPORT MODAL -->
+      <div class="modal hidden" id="absence-modal">
+        <div class="modal-content" style="max-width: 450px;">
+          <div class="modal-header">
+            <h2>Call in Sick / Report Absence</h2>
+            <button class="modal-close" onclick="closeAbsenceModal()">&times;</button>
+          </div>
+          <div class="modal-body" style="padding: 20px;">
+            <form id="absence-form" onsubmit="handleAbsenceSubmit(event)">
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Select Employee</label>
+                <select id="absence-employee" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                  <option value="">Choose employee...</option>
+                  <option value="10">Grace Adekunle (Content Writer)</option>
+                  <option value="1">Jessica Eze (Marketing Lead)</option>
+                  <option value="6">Zainab Hassan (Product Designer)</option>
+                  <option value="7">Emeka Chukwu (Marketing Specialist)</option>
+                </select>
+              </div>
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Select Day</label>
+                <select id="absence-day" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                  <option value="Mon">Monday (June 15)</option>
+                  <option value="Tue" selected>Tuesday (June 16)</option>
+                  <option value="Wed">Wednesday (June 17)</option>
+                  <option value="Thu">Thursday (June 18)</option>
+                  <option value="Fri">Friday (June 19)</option>
+                </select>
+              </div>
+              <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Reason</label>
+                <select id="absence-reason" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                  <option value="Flu / Fever">Flu / Fever</option>
+                  <option value="Family Medical">Family Medical Emergency</option>
+                  <option value="Doctor Appointment">Doctor Appointment</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 13px; font-weight: 600;">
+                <i class="ti ti-alert-triangle"></i> Submit Absence & Scan backups
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast" id="toast"></div>
+
+<!-- AI CHAT ASSISTANT -->
+<button class="chat-fab" id="chat-fab" onclick="toggleChat()" title="Chat with Crewly AI">
+  <i class="ti ti-message-chatbot" id="chat-fab-icon"></i>
+</button>
+
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <i class="ti ti-robot" style="font-size: 20px;"></i>
+      <div>
+        <span class="chat-header-title">Crewly AI</span>
+        <span class="chat-header-status"><span class="chat-status-dot"></span> Online</span>
+      </div>
+    </div>
+    <button class="chat-close-btn" onclick="toggleChat()" title="Close chat">
+      <i class="ti ti-x"></i>
+    </button>
+  </div>
+
+  <div class="chat-messages" id="chat-messages"></div>
+
+  <div class="chat-chips" id="chat-chips">
+    <button class="chat-chip" onclick="handleChatChip('My leave balance')">🌴 My leave balance</button>
+    <button class="chat-chip" onclick="handleChatChip('Team directory')">👥 Team directory</button>
+    <button class="chat-chip" onclick="handleChatChip('Next payslip')">💰 Next payslip</button>
+    <button class="chat-chip" onclick="handleChatChip('Performance score')">⭐ Performance score</button>
+    <button class="chat-chip" onclick="handleChatChip('Who is on leave?')">📋 Who is on leave?</button>
+  </div>
+
+  <div class="chat-input-area">
+    <input type="text" class="chat-input" id="chat-input" placeholder="Ask me anything..." onkeypress="handleChatKeypress(event)" />
+    <button class="chat-send-btn" onclick="sendFromInput()" title="Send message">
+      <i class="ti ti-send"></i>
+    </button>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="employee-app.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+

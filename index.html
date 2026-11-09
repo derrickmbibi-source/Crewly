@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Crewly — Secure Access</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="styles.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+<div class="app">
+
+  <!-- ===== LEFT BRANDING PANEL ===== -->
+  <aside class="left-panel" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="left-brand">
+      <div class="logo-mark">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.24 7.76 A6 6 0 1 0 16.24 16.24" stroke-width="3"/><circle cx="15.4" cy="12" r="1.9" fill="#3B9CFF" stroke="none"/></svg>
+        </div>
+        <span class="logo-text">Crew<span>ly</span></span>
+      </div>
+
+      <h1 class="left-headline">
+        HR Workflows,<br /><em>intelligently</em> connected.
+      </h1>
+      <p class="left-sub">
+        Crewly unifies your people data, performance cycles, and team communications — giving HR leaders and managers a single source of truth.
+      </p>
+
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-num">14<span>k+</span></div>
+          <div class="stat-label">Organizations</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">98<span>%</span></div>
+          <div class="stat-label">Uptime SLA</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">3<span>M+</span></div>
+          <div class="stat-label">Employees Managed</div>
+        </div>
+      </div>
+
+      <div class="features">
+        <div class="feature-item"><span class="feature-dot"></span>Role-based access control</div>
+        <div class="feature-item"><span class="feature-dot"></span>SSO &amp; enterprise authentication</div>
+        <div class="feature-item"><span class="feature-dot"></span>SOC 2 Type II certified</div>
+        <div class="feature-item"><span class="feature-dot"></span>Real-time people analytics</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== RIGHT AUTH PANEL ===== -->
+  <main class="right-panel">
+    <div class="auth-card">
+
+      <!-- ========== SCREEN: LOGIN ========== -->
+      <div class="screen active" id="screen-login">
+        <div class="card-eyebrow">Secure Access</div>
+        <h2 class="card-title">Welcome back</h2>
+        <p class="card-subtitle" id="login-subtitle">Sign in to your Crewly workspace.</p>
+
+        <!-- Role Tabs -->
+        <div class="role-tabs" role="tablist" aria-label="Select your role">
+          <button class="role-tab active" role="tab" aria-selected="true"  data-role="employee" onclick="setRole('employee')">Employee</button>
+          <button class="role-tab"        role="tab" aria-selected="false" data-role="manager"  onclick="setRole('manager')">Manager</button>
+          <button class="role-tab"        role="tab" aria-selected="false" data-role="hradmin"  onclick="setRole('hradmin')">HR Admin</button>
+        </div>
+
+        <!-- Role Badge -->
+        <span class="role-badge employee" id="role-badge">
+          <span class="dot"></span>
+          <span id="role-badge-text">Standard Access</span>
+        </span>
+
+        <!-- Demo account hint -->
+        <div class="demo-hint" id="demo-hint"></div>
+
+        <!-- Flash -->
+        <div class="flash" id="login-flash"></div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label class="form-label" for="login-email">Work Email</label>
+          <input class="form-input" type="email" id="login-email" placeholder="you@company.com" autocomplete="email" />
+          <div class="error-msg" id="err-login-email">Please enter a valid email address.</div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <div class="input-wrap input-with-icon">
+            <input class="form-input" type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password" />
+            <button class="input-icon-btn" type="button" onclick="togglePw('login-password', this)" aria-label="Show password">
+              <svg id="eye-login" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="error-msg" id="err-login-password">Password is required.</div>
+        </div>
+
+        <!-- Remember / Forgot -->
+        <div class="login-meta">
+          <div class="checkbox-group">
+            <input type="checkbox" id="remember-me" />
+            <label for="remember-me">Remember me</label>
+          </div>
+          <a class="forgot-link" onclick="showScreen('forgot')" href="#">Forgot password?</a>
+        </div>
+
+        <button class="btn-primary" id="btn-login" onclick="handleLogin()">
+          <span class="spinner"></span>
+          <span class="btn-text">Sign In</span>
+        </button>
+
+        <div class="auth-switch">Don't have an account? <a onclick="showScreen('signup')" href="#">Create one</a></div>
+      </div>
+      <!-- /screen-login -->
+
+
+      <!-- ========== SCREEN: SIGN UP ========== -->
+      <div class="screen" id="screen-signup">
+        <div class="card-eyebrow">Get Started</div>
+        <h2 class="card-title">Create your account</h2>
+        <p class="card-subtitle">Join your organization on Crewly.</p>
+
+        <div class="flash" id="signup-flash"></div>
+
+        <!-- Full Name -->
+        <div class="form-group">
+          <label class="form-label" for="su-name">Full Name</label>
+          <input class="form-input" type="text" id="su-name" placeholder="Jane Smith" autocomplete="name" />
+          <div class="error-msg" id="err-su-name">Full name is required.</div>
+        </div>
+
+        <!-- Work Email -->
+        <div class="form-group">
+          <label class="form-label" for="su-email">Work Email</label>
+          <input class="form-input" type="email" id="su-email" placeholder="jane@company.com" autocomplete="email" />
+          <div class="error-msg" id="err-su-email">Please enter a valid work email.</div>
+        </div>
+
+        <!-- Role -->
+        <div class="form-group">
+          <label class="form-label" for="su-role">Your Role</label>
+          <select class="form-select" id="su-role">
+            <option value="">— Select your role —</option>
+            <option value="employee">Employee</option>
+            <option value="manager">Manager</option>
+            <option value="hradmin">HR Admin</option>
+          </select>
+          <div class="error-msg" id="err-su-role">Please select a role.</div>
+        </div>
+
+        <!-- Org Code -->
+        <div class="form-group">
+          <div class="label-wrap">
+            <label class="form-label" for="su-orgcode" style="margin-bottom:0">Organization Code</label>
+            <span class="tooltip-trigger">?
+              <span class="tooltip-box">Get this code from your HR Department.</span>
+            </span>
+          </div>
+          <input class="form-input" type="text" id="su-orgcode" placeholder="e.g. CRW-2024-ACME" autocomplete="off" />
+          <div class="error-msg" id="err-su-orgcode">Organization code is required.</div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label class="form-label" for="su-password">Password</label>
+          <div class="input-wrap input-with-icon">
+            <input class="form-input" type="password" id="su-password" placeholder="Minimum 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)" />
+            <button class="input-icon-btn" type="button" onclick="togglePw('su-password', this)" aria-label="Show password">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="pw-strength" id="pw-strength">
+            <div class="strength-bars">
+              <div class="strength-bar" id="sb1"></div>
+              <div class="strength-bar" id="sb2"></div>
+              <div class="strength-bar" id="sb3"></div>
+              <div class="strength-bar" id="sb4"></div>
+            </div>
+            <div class="strength-label" id="strength-label">Too short</div>
+          </div>
+          <div class="error-msg" id="err-su-password">Password must be at least 8 characters.</div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="form-group">
+          <label class="form-label" for="su-confirm">Confirm Password</label>
+          <div class="input-wrap input-with-icon">
+            <input class="form-input" type="password" id="su-confirm" placeholder="Re-enter password" autocomplete="new-password" />
+            <button class="input-icon-btn" type="button" onclick="togglePw('su-confirm', this)" aria-label="Show password">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="error-msg" id="err-su-confirm">Passwords do not match.</div>
+        </div>
+
+        <!-- Terms -->
+        <div class="checkbox-group">
+          <input type="checkbox" id="su-terms" />
+          <label for="su-terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+        </div>
+        <div class="error-msg" id="err-su-terms" style="margin-top:-12px;margin-bottom:14px;">You must accept the terms to continue.</div>
+
+        <button class="btn-primary" id="btn-signup" onclick="handleSignup()">
+          <span class="spinner"></span>
+          <span class="btn-text">Create Account</span>
+        </button>
+
+        <div class="auth-switch">Already have an account? <a onclick="showScreen('login')" href="#">Sign in</a></div>
+      </div>
+      <!-- /screen-signup -->
+
+
+      <!-- ========== SCREEN: FORGOT PASSWORD ========== -->
+      <div class="screen" id="screen-forgot">
+        <div class="card-eyebrow">Password Recovery</div>
+        <h2 class="card-title">Reset your password</h2>
+        <p class="card-subtitle">We'll send a reset link to your work email.</p>
+
+        <!-- Request form -->
+        <div id="forgot-form">
+          <div class="flash" id="forgot-flash"></div>
+          <div class="form-group">
+            <label class="form-label" for="forgot-email">Work Email</label>
+            <input class="form-input" type="email" id="forgot-email" placeholder="you@company.com" autocomplete="email" />
+            <div class="error-msg" id="err-forgot-email">Please enter a valid email address.</div>
+          </div>
+          <button class="btn-primary" id="btn-forgot" onclick="handleForgot()">
+            <span class="spinner"></span>
+            <span class="btn-text">Send Reset Link</span>
+          </button>
+        </div>
+
+        <!-- Success state -->
+        <div class="success-state" id="forgot-success">
+          <div class="success-icon">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="success-title">Check your inbox</div>
+          <p class="success-msg">A reset link was sent to<br /><span class="success-email" id="sent-email-display"></span></p>
+          <p class="success-msg" style="font-size:12.5px;">Didn't receive it? Check your spam folder or resend.</p>
+          <div class="resend-row">
+            <span id="countdown-text">Resend link in <strong id="countdown-num">60</strong>s</span>
+            <a class="resend-link" id="resend-btn" onclick="resendLink()" href="#">Resend now</a>
+          </div>
+        </div>
+
+        <hr class="hr-line" />
+        <a class="back-link" onclick="showScreen('login')" href="#">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Sign In
+        </a>
+      </div>
+      <!-- /screen-forgot -->
+
+    </div><!-- /auth-card -->
+
+    <div class="right-footer">© 2025 Crewly Inc. · SOC 2 Certified · <a href="#" style="color:inherit;text-decoration:none;">Privacy Policy</a></div>
+  </main>
+</div>
+
+<script src="crewly-db.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
+
